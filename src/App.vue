@@ -4,7 +4,7 @@ import Nav from '@/components/Nav.vue'
 </script>
 
 <template>
-  <div class="dark:bg-slate-800 h-screen overflow-hidden">
+  <div class="dark:bg-slate-800 h-screen overflowx-hidden">
     <Nav />
     <router-view />
   </div>

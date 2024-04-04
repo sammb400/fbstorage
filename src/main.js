@@ -13,10 +13,9 @@ import "firebase/compat/firestore";
 import "firebase/firestore";
 
 
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-export const db = getFirestore(app)
-export const storage = getStorage(app);
+const analytics = getAnalytics();
+
+export const storage = getStorage();
 
 
 createApp(App).use(router).mount('#app')

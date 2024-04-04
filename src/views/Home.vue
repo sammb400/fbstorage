@@ -26,19 +26,22 @@
                     <label for="floating_company" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Department</label>
                 </div>
             </div>
+            <label class="max-w-md mx-auto block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="file_input">Upload file</label>
+            <input @change="uploadImage"  type="file" class="max-w-md mx-auto block text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" id="file_input" >
+
             <button @click="userInfo" type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
-            </form>
             
-        <label class="max-w-md mx-auto block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="file_input">Upload file</label>
-        <input @change="uploadImage" type="file" class="max-w-md mx-auto block text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" id="file_input" >
+        </form>
+            
+       
 
     </div>
 </template>
 
 <script>
-import { getStorage, ref, uploadBytes } from "firebase/storage";
-import { collection, addDoc, doc } from "firebase/firestore";
-import {db} from '@/main'
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import { collection, addDoc, doc, setDoc } from "firebase/firestore";
+import db from '@/plugins/firebase'
 import firebase from "firebase/compat/app";
 import "firebase/firestore";
 
@@ -55,6 +58,7 @@ export default {
         idNo: "",
         phoneNo: '',
         department: '',
+        imageUrl:"",
         };
   },
   methods: {
@@ -66,30 +70,41 @@ export default {
         const storage = getStorage();
 
         const storageRef = ref(storage, 'documents/' + file.name);
+        
 
         try {
                     const snapshot = await uploadBytes(storageRef, file);
                     console.log('Uploaded!');
+                    const downloadUrl = await getDownloadURL(storageRef)
+                    console.log(downloadUrl)
+                    this.imageUrl = downloadUrl
                 } catch (error) {
                     console.error(error);
                 }
     },
     async userInfo () {
         try {
-            console.log("success")
-            const info = await addDoc(collection(db, "new"), {
+            const dataObj = {
                 name: this.name,
                 email: this.email,
                 idNo: this.idNo,
                 phone: this.phoneNo,
-                department: this.department
-            });
-            info()
+                department: this.department,
+                image: this.imageUrl
+            }
+            const collectionRef = collection(db, "users")
+            console.log("success")
+            const dataOnline = await addDoc(collectionRef, dataObj)
             console.log("success")
         } catch (error) {
             console.log("Error is:", error)
         }
+    },
+    async imageAndPic () {
+        
     }
+    
+   
   },
 }
 </script>
