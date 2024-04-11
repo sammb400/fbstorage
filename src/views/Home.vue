@@ -100,15 +100,13 @@ export default {
             }
             const collectionRef = collection(db, "users")
             console.log("success")
-            const dataOnline = await addDoc(collectionRef, dataObj)
+            const dataOnline = await setDoc(doc(collectionRef, this.email), dataObj)
             console.log("success")
         } catch (error) {
             console.log("Error is:", error)
         }
     },
-    async imageAndPic () {
-        
-    }
+   
     
    
   },
