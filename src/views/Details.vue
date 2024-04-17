@@ -7,7 +7,7 @@
                 <form @submit.prevent="updateUser(index)" class="space-y-6" action="#">
                     <h5 class="text-xl font-medium text-gray-900 dark:text-white">Change User</h5>
                     <div>
-                        <input type="file"   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="email" />
+                        <input @change="holdImage" type="file"   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="email" />
                     </div>
                     <div>
                         <input v-model="email" type="email"   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="email" required />
@@ -62,7 +62,7 @@
 <script>
 import { QuerySnapshot, collection, doc, getDoc, getDocs, onSnapshot, updateDoc } from 'firebase/firestore';
 import db from '@/plugins/firebase'
-import { uploadBytesResumable } from 'firebase/storage';
+import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes, uploadBytesResumable } from 'firebase/storage';
 import { update } from 'firebase/database';
 import { onUnmounted } from 'vue';
 
@@ -82,7 +82,7 @@ export default {
             department: "",
             phone: "",
             idNo: "",
-            image: "",
+            newImage: "",
         }
     },
     methods: {
@@ -94,11 +94,11 @@ export default {
                     this.users.push(doc.data());
                 });
                 console.log(this.users)
-                return users;
             } catch (error) {
             console.error('Error fetching users: ', error);
             }
         },
+
         async snapDetails() {
             onSnapshot(collection(db, 'users'), (snap) => {
                 snap.forEach((doc) => {
@@ -107,6 +107,7 @@ export default {
                 console.log(this.users)
             })
         },
+
         async populate(name, email, department, phone, idNo, image) {
             this.name = name 
             this.email = email
@@ -115,9 +116,15 @@ export default {
             this.idNo = idNo 
             this.image = image
         },
+
         async updateUser() {
             var id = this.email
             const userRef = doc(db, 'users', id)
+
+            if(this.image) {
+                this.uploadNewPic()
+            }
+
             await updateDoc(userRef, {
                 name: this.name,
                 email: this.email,
@@ -127,7 +134,52 @@ export default {
                 image: this.image
             })
             console.log("data successfully changed")
+            
+        },
+
+        async holdImage (e) {
+            this.newImage = e.target.files[0]; 
+        },
+        async deleteExistingImageIfExists() {
+            const storage = getStorage();
+            const currentImageRef = ref(storage, 'documents/' + this.email);
+
+            try {
+                // Check if the existing image exists
+                await getDownloadURL(currentImageRef);
+
+                // If the execution reaches here, the image exists
+                console.log('Existing image found. Deleting existing image...');
+
+                // Delete the existing image
+                await deleteObject(currentImageRef);
+                console.log('Current image deleted!');
+            } catch (error) {
+                // If an error occurs, it means the image does not exist
+                console.log('No existing image found.');
+            }
+        },
+        async uploadNewImage() {
+            const storage = getStorage();
+            const newImageRef = ref(storage, 'documents/' + this.email);
+
+            // Upload the new image
+            await uploadBytes(newImageRef, this.newImage);
+            console.log('New image uploaded!');
+
+            // Get the download URL of the new image
+            const downloadUrl = await getDownloadURL(newImageRef);
+            console.log(downloadUrl);
+
+            // Update the user's image with the download URL of the new image
+            this.image = downloadUrl;
+        },
+        async uploadNewPic() {
+            await this.deleteExistingImageIfExists(); // Call the function to delete the existing image if it exists
+            await this.uploadNewImage(); // Call the function to upload the new image
         }
+
+
     },
     
     mounted () {
