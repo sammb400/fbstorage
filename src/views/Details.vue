@@ -7,6 +7,9 @@
                 <form @submit.prevent="updateUser(index)" class="space-y-6" action="#">
                     <h5 class="text-xl font-medium text-gray-900 dark:text-white">Change User</h5>
                     <div>
+                        <input type="file"   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="email" />
+                    </div>
+                    <div>
                         <input v-model="email" type="email"   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="email" required />
                     </div>
                     <div>
@@ -118,6 +121,10 @@ export default {
             await updateDoc(userRef, {
                 name: this.name,
                 email: this.email,
+                department: this.department,
+                phone: this.phone,
+                idNo: this.idNo,
+                image: this.image
             })
             console.log("data successfully changed")
         }
