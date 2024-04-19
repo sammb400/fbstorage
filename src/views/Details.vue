@@ -100,6 +100,9 @@ export default {
         },
 
         async snapDetails() {
+            // Clear the users array
+            this.users = [];
+            
             onSnapshot(collection(db, 'users'), (snap) => {
                 snap.forEach((doc) => {
                     this.users.push(doc.data())
@@ -177,6 +180,8 @@ export default {
         async uploadNewPic() {
             await this.deleteExistingImageIfExists(); // Call the function to delete the existing image if it exists
             await this.uploadNewImage(); // Call the function to upload the new image
+
+            this.snapDetails()
         }
 
 
